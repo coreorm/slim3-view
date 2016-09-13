@@ -4,6 +4,10 @@ View renderer for slim3 with very straightforward and simple (yet still customis
 
 This also works with any PSR-7 compliant response objects.
 
+## Example 
+- live demo: http://localhost:8080/about
+- source: (https://github.com/coreorm/slim3-view-example)[https://github.com/coreorm/slim3-view-example]
+
 ## Requirement
 
 - php 5.6+
