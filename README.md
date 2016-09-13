@@ -17,7 +17,7 @@ This also works with any PSR-7 compliant response objects.
  `phpunit`
  
 ## Start Example Server
- `./start.sh`
+ `./start.sh` and browse to [http://localhost:8000/]()
  
 ## Usage
  
@@ -40,7 +40,9 @@ themes
 - Note that a default layout is recommended in case a custom layout is not found, it will fall back to the default one.
 - Views: views must be under views, but can be in nested directories, when you need to render it, simply use the relative path against views, e.g. if you have `views/foo/bar.phtml`, simply call `$theme->render($response, 'foo/bar')`
 
-Example (or just open up examples/app/index.php):
+#### Example (or just open up examples/app/index.php):
+
+* Use with slim
 
 ```
 use \Coreorm\Slim3\Theme;
@@ -60,23 +62,37 @@ $app->get('/', function ($request, $response, $args) use ($theme) {
 $app->run();
 ```
 
-If you want to use it with other PSR-7 compliant library, just do
+* Use with other PSR-7 compliant library
+
 ```
 $response = new Response();
 $response = Theme::instance('theme-base-dir', 'theme-name')->render($response, 'template-name', [data array]);
 echo $response->getBody();
 ```
 
-## Advanced usage
 
-Within the template, you can use `$this->import(template-name, partial-data)` to render a sub template. 
+### APIs
+
+#### - instantiate the theme class
+
+We use a singleton pattern to ensure all shared data are available to each and every template, so simply use:
+
+```
+use \Coreorm\Slim3\Theme;
+
+$theme = Theme::instance('theme base directory', 'layout name');
+```
+
+#### - switch layout
+
+It's possible to switch layout either from the beginning of the code, or inside the routes at run time.
+
+```
+$theme->setLayout('layout name');
+```
 
 E.g.
-```
-<p><?php $this->import('sub/foo', ['foo' => 'bar']) ?></p>
-```
 
-Switch layout at run time: simply call `$theme->setLayout(layout name)`, e.g.
 
 ```
 $app->get('/', function ($request, $response, $args) use ($theme) {
@@ -87,4 +103,30 @@ $app->get('/', function ($request, $response, $args) use ($theme) {
 });
 ```
 
-If layout file is not found, it will default back to 'default.phtml' if exists in the current theme directory, otherwise it will default back to default layout inside default theme.
+If layout file is not found, it will default back to `default.phtml` if exists in the current theme directory, otherwise it will default back to default layout inside default theme.
+
+#### - render a template plus the layout
+
+```
+$theme->render($response, 'relative path/template name', [partial data]);
+```
+
+This will render the template then in turn render the chosen layout and output to the browser.
+
+#### - render a template and retrieve the content
+
+```
+$viewSrcHTML = $theme->renderView('relative path/template name', [partial data]);
+```
+
+#### - import a sub template inside a template
+
+In the template code, do:
+```
+$this->import('relative path/template name', [partial data]);
+```
+
+### Data scope
+
+- `$theme->setData($k, $v)` sets data that is available for all templates/layouts;
+- passing partial data to the render/import function will set data that is private to the given template only. e.g. `$theme->render($response, 'page', ['foo' => 'bar'])` will set the $foo value to 'bar' only for the `page` template.
