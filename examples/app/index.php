@@ -15,4 +15,11 @@ $app->get('/', function ($request, $response, $args) use ($theme) {
     ]);
 });
 
+// runtime layout switching
+$app->get('/newLayout', function ($request, $response, $args) use ($theme) {
+    return $theme->setLayout('new-layout')->render($response, 'index', [
+        'foo' => 'bar'
+    ]);
+});
+
 $app->run();
