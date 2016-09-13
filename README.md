@@ -17,7 +17,7 @@ This also works with any PSR-7 compliant response objects.
  `phpunit`
  
 ## Start Example Server
- `./start.sh` and browse to [http://localhost:8000/]()
+ `./start.sh` and browse to [http://localhost:8000/](http://localhost:8000/)
  
 ## Structure
  
