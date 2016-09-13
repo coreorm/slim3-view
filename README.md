@@ -5,8 +5,8 @@ View renderer for slim3 with very straightforward and simple (yet still customis
 This also works with any PSR-7 compliant response objects.
 
 ## Example 
-- live demo: (https://slim3-view-example.herokuapp.com/)[https://slim3-view-example.herokuapp.com/]
-- source: (https://github.com/coreorm/slim3-view-example)[https://github.com/coreorm/slim3-view-example]
+- live demo: [https://slim3-view-example.herokuapp.com/](https://slim3-view-example.herokuapp.com/)
+- source: [https://github.com/coreorm/slim3-view-example](https://github.com/coreorm/slim3-view-example)
 
 ## Requirement
 
