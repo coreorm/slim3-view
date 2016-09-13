@@ -19,7 +19,7 @@ This also works with any PSR-7 compliant response objects.
 ## Start Example Server
  `./start.sh` and browse to [http://localhost:8000/]()
  
-## Usage
+## Structure
  
 make sure your themes directory are in the following structure:
 
@@ -40,7 +40,29 @@ themes
 - Note that a default layout is recommended in case a custom layout is not found, it will fall back to the default one.
 - Views: views must be under views, but can be in nested directories, when you need to render it, simply use the relative path against views, e.g. if you have `views/foo/bar.phtml`, simply call `$theme->render($response, 'foo/bar')`
 
-#### Example (or just open up examples/app/index.php):
+## Layout template
+
+Layout template must contain a default variable `$mainContent` in the body so sub templates can appear, e.g.
+
+```
+# file: themes/default/layouts/default.phtml
+
+...
+<body><?php echo $mainContent; ?></body>
+...
+```
+
+Another way to send rendered content to the page is to use `$theme->renderView()`, e.g.
+
+```
+# in route
+$theme->setData('myHeader', $theme->renderView('shared/header'));
+
+# in layout
+echo $myHeader
+```
+
+## Usage Example (or just open up examples/app/index.php):
 
 * Use with slim
 
@@ -71,7 +93,7 @@ echo $response->getBody();
 ```
 
 
-### APIs
+## APIs
 
 #### - instantiate the theme class
 
