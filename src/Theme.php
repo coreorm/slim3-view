@@ -29,12 +29,12 @@ class Theme
      * @var array
      */
     private $cnf = [
-        'basePath' => '',
-        'layout' => '',
-        'theme' => '',
-        'defaultLayout' => 'default',
-        'defaultTheme' => 'default',
-        'themePath' => null,
+        'basePath'         => '',
+        'layout'           => '',
+        'theme'            => '',
+        'defaultLayout'    => 'default',
+        'defaultTheme'     => 'default',
+        'themePath'        => null,
         'defaultThemePath' => null
     ];
 
@@ -84,22 +84,26 @@ class Theme
     /**
      * set current theme
      * @param $theme
+     * @return $this
      */
     public function setTheme($theme)
     {
         $this->cnf['theme'] = $theme;
         $this->cnf['themePath'] = $this->cnf['basePath'] . DIRECTORY_SEPARATOR . $theme;
         $this->cnf['defaultThemePath'] = $this->cnf['basePath'] . DIRECTORY_SEPARATOR . $this->cnf['defaultTheme'];
+        return $this;
     }
 
     /**
      * set current layout (run time)
      * default to 'default'
      * @param $layout
+     * @return $this
      */
     public function setLayout($layout)
     {
         $this->cnf['layout'] = $layout;
+        return $this;
     }
 
     /**
@@ -130,19 +134,19 @@ class Theme
     protected function getLayoutPath()
     {
         $path = $this->cnf['themePath'] . DIRECTORY_SEPARATOR .
-            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['layout'];
+            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['layout'] . '.phtml';
         if (is_file($path)) {
             return $path;
         }
         // 1st level fallback: go back to default layout within the same theme
         $path = $this->cnf['themePath'] . DIRECTORY_SEPARATOR .
-            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['layout'];
+            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['layout'] . '.phtml';
         if (is_file($path)) {
             return $path;
         }
         // 2nd level fallback: use default layout file from default theme
         $path = $this->cnf['defaultThemePath'] . DIRECTORY_SEPARATOR .
-            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['defaultLayout'];
+            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['defaultLayout'] . '.phtml';
         // just return now - render will verify it again
         return $path;
     }
