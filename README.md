@@ -59,7 +59,12 @@ Another way to send rendered content to the page is to use `$theme->renderView()
 $theme->setData('myHeader', $theme->renderView('shared/header'));
 
 # in layout
+
+...
+<head>
 echo $myHeader
+</head>
+...
 ```
 
 ## Usage Example (or just open up examples/app/index.php):
