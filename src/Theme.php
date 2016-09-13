@@ -82,6 +82,20 @@ class Theme
     }
 
     /**
+     * get data
+     * @param $k
+     * @param null $default
+     * @return null
+     */
+    public function getData($k, $default = null)
+    {
+        if (!empty($this->data[$k])) {
+            return $this->data[$k];
+        }
+        return $default;
+    }
+
+    /**
      * set current theme
      * @param $theme
      * @return $this
