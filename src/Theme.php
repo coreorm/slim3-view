@@ -132,8 +132,9 @@ class Theme
      * but from a different theme, it will fall back to this one when the file does not exist in the different theme.
      * @param $templateRelativePath string - make sure you include the views/layouts dir names in the path
      * @param $theme
+     * @return $this
      */
-    public function share($templateRelativePath, $theme)
+    public function share($templateRelativePath, $theme = 'default')
     {
         // theme must exist
         $path = $this->getAbsolutePath($theme . DIRECTORY_SEPARATOR . $templateRelativePath);
@@ -141,6 +142,7 @@ class Theme
             throw new \RuntimeException("Unable to share template {$templateRelativePath} as it doesn't exist.");
         }
         $this->cnf['sharedPaths'][$templateRelativePath] = $path;
+        return $this;
     }
 
     /**
