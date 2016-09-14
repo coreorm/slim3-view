@@ -123,7 +123,7 @@ class Theme
         $this->cnf['theme'] = $theme;
         $this->cnf['themePath'] = $this->cnf['basePath'] . DIRECTORY_SEPARATOR . $theme;
         // define the shared theme
-        $this->share('layouts/default', 'default/layouts/default');
+        $this->share('layouts/default', 'default');
         return $this;
     }
 

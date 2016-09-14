@@ -23,7 +23,7 @@ class RenderTest extends TestCase
     public function testFallbackRender()
     {
         $theme = Theme::instance(__DIR__ . '/../examples/themes', 'tests');
-        $theme->share('views/foo', 'tests/views/foo');
+        $theme->share('views/foo', 'tests');
         // try render an non-existent theme with a fallback and it should not break
         $this->assertEquals($src = $theme->setTheme('non-existent')->renderView('foo'), 'true');
         $theme->setTheme('tests');
