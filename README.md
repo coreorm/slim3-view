@@ -20,9 +20,6 @@ This also works with any PSR-7 compliant response objects.
 ## Test
  `phpunit`
  
-## Start Example Server
- `./start.sh` and browse to [http://localhost:8000/](http://localhost:8000/)
- 
 ## Structure
  
 make sure your themes directory are in the following structure:
@@ -103,10 +100,9 @@ echo $response->getBody();
 
 
 ## APIs
-
-#### - instantiate the theme class
-
-We use a singleton pattern to ensure all shared data are available to each and every template, so simply use:
+### Theme APIs
+#### Theme::instance($templatePath = null, $theme = 'default') 
+**instantiate the theme class**: We use a singleton pattern to ensure all shared data are available to each and every template, so simply use:
 
 ```
 use \Coreorm\Slim3\Theme;
@@ -114,16 +110,14 @@ use \Coreorm\Slim3\Theme;
 $theme = Theme::instance('theme base directory', 'layout name');
 ```
 
-#### - switch layout
-
-It's possible to switch layout either from the beginning of the code, or inside the routes at run time.
+#### $theme->setLayout($layout) 
+**switch layout**: It's possible to switch layout either from the beginning of the code, or inside the routes at run time.
 
 ```
 $theme->setLayout('layout name');
 ```
 
 E.g.
-
 
 ```
 $app->get('/', function ($request, $response, $args) use ($theme) {
@@ -134,30 +128,59 @@ $app->get('/', function ($request, $response, $args) use ($theme) {
 });
 ```
 
-If layout file is not found, it will default back to `default.phtml` if exists in the current theme directory, otherwise it will default back to default layout inside default theme.
+#### $theme->setTheme($theme)
+**switch theme**: This will set the current theme to the string value of `$theme`.
 
-#### - render a template plus the layout
+#### $theme->share($templateRelativePath, $theme)
+**mark a template from a specific theme as shareable**: this will essentially make it a global template to go to when a template with the same name from a different theme is not found.
+
+- `$templateRelativePath` the relative path to the template
+- `$theme` the theme name
+
+E.g.
+```
+$theme->share('views/page1', 'default');
+```
+This will mark the page `themes/default/views/page1.phtml` as the shared view for relative path `views/page1`, so if say I'm in theme 'new' and I call `renderView('page1')`, if `themes/new/views/page1.phtml` doesn't exist, it will use `themes/default/views/page1.phtml` instead.
+
+
+#### $theme->render(ResponseInterface $response, $template, array $data = [], $shouldFallback = false)
+**render a template plus the layout**: This is the final render function you'd want to run in your route/controller, as it renders the give template and assigns it to the `$mainContent` partial data which in turn will be displayed in the template main body (or wherever you would like to, by calling `<?php echo $mainContent; ?>`). So it renders template, then layout, and then output to the browser.
+
+- `$shouldFallback` - when this is set to true, the system will try to find the fallback template if the given template is not found (see above `share` API for more details).
+
+E.g.
 
 ```
-$theme->render($response, 'relative path/template name', [partial data]);
+$theme->render($response, 'relative path/template name', [partial data], true);
 ```
 
-This will render the template then in turn render the chosen layout and output to the browser.
+#### $theme->renderView($template, $data = [], $shouldFallback = true, $reuseHTML = false)
+**render a template and retrieve the content**: This renders a template and will return the html.
 
-#### - render a template and retrieve the content
+`$reuseHTML` if this is set to true, the given template will render only once, and any future renderView/import calls to this template will reuse the HTML that's rendered from the very first one. Use this for elements that are repeated on the same page with exactly the same HTML source.
+
+E.g.
 
 ```
 $viewSrcHTML = $theme->renderView('relative path/template name', [partial data]);
 ```
 
-#### - import a sub template inside a template
+### Template (layout/views) API
+#### $this->import($templateFile, $data = [], $shouldFallback = true, $reuseHTML = false)
+**import a sub template inside a template** This is only available inside the template itself.
 
 In the template code, do:
 ```
 $this->import('relative path/template name', [partial data]);
 ```
 
-### Data scope
+## Data scope
 
-- `$theme->setData($k, $v)` sets data that is available for all templates/layouts;
-- passing partial data to the render/import function will set data that is private to the given template only. e.g. `$theme->render($response, 'page', ['foo' => 'bar'])` will set the $foo value to 'bar' only for the `page` template.
+### Global (data available to all templates)
+
+`$theme->setData($k, $v)` sets data that is available for all templates/layouts;
+
+### Private (partial data that will override global data, when used for rendering individual views)
+passing partial data to the render/import function will set data that is private to the given template only. 
+e.g. `$theme->render($response, 'page', ['foo' => 'bar'])` will set the $foo value to 'bar' only for the `page` template.

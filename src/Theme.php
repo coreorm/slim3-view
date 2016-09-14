@@ -29,9 +29,9 @@ class Theme
      * @var array
      */
     private $cnf = [
-        'basePath'    => '',
-        'layout'      => '',
-        'theme'       => '',
+        'basePath' => '',
+        'layout' => '',
+        'theme' => '',
         'customPaths' => [],
         'sharedPaths' => []
     ];
@@ -130,15 +130,15 @@ class Theme
     /**
      * mark a template from a theme as shareable - so when app is trying to render a file with the same name
      * but from a different theme, it will fall back to this one when the file does not exist in the different theme.
-     * @param $templateRelativePath
-     * @param $themeAndTemplateFilePath
+     * @param $templateRelativePath string - make sure you include the views/layouts dir names in the path
+     * @param $theme
      */
-    public function share($templateRelativePath, $themeAndTemplateFilePath)
+    public function share($templateRelativePath, $theme)
     {
         // theme must exist
-        $path = $this->getAbsolutePath($themeAndTemplateFilePath);
+        $path = $this->getAbsolutePath($theme . DIRECTORY_SEPARATOR . $templateRelativePath);
         if (!is_file($path)) {
-            throw new \RuntimeException("Unable to share template {$themeAndTemplateFilePath} as it doesn't exist.");
+            throw new \RuntimeException("Unable to share template {$templateRelativePath} as it doesn't exist.");
         }
         $this->cnf['sharedPaths'][$templateRelativePath] = $path;
     }
@@ -163,7 +163,7 @@ class Theme
      * @param bool $reuseHTML if true, this template will render ever once and be reused afterwards
      * @return string
      */
-    public function scopedInclude($template, $data = [], $reuseHTML = false)
+    protected function scopedInclude($template, $data = [], $reuseHTML = false)
     {
         // if reuseHTML is true, no need to render
         if ($reuseHTML && !empty($this->reusableHTML[$template])) {
