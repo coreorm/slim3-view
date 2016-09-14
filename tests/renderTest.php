@@ -1,9 +1,8 @@
 <?php
-use PHPUnit\Framework\TestCase;
 use Coreorm\Slim3\Theme;
 use Slim\Http\Response;
 
-class RenderTest extends TestCase
+class RenderTest extends PHPUnit_Framework_TestCase
 {
     public function testRender()
     {

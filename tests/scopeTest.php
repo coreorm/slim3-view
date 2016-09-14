@@ -1,8 +1,7 @@
 <?php
-use PHPUnit\Framework\TestCase;
 use Coreorm\Slim3\Theme;
 
-class ScopeTest extends TestCase
+class ScopeTest extends PHPUnit_Framework_TestCase
 {
     public function testViewRenderWithPrivateScope()
     {
