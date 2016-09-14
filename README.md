@@ -1,5 +1,7 @@
 # slim3-view
 
+[![Build Status](https://travis-ci.org/coreorm/slim3-view.svg?branch=master)](https://travis-ci.org/coreorm/slim3-view)
+
 View renderer for slim3 with very straightforward and simple (yet still customisable) theme/layout/templates structure.
 
 This also works with any PSR-7 compliant response objects.
