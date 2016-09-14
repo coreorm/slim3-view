@@ -1,24 +1,25 @@
 {
-    "name": "coreorm/slim3-view",
-    "description": "view renderer for slim3 with very straightforward and simple (yet still customisable) theme/layout/templates structure",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Bruce B Li",
-            "email": "coreorm@gmail.com"
-        }
-    ],
-    "minimum-stability": "stable",
-    "require": {
-        "psr/http-message": "^1.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "Coreorm\\Slim3\\": "src"
-        }
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^5.5",
-        "slim/slim" : "^3.0"
+  "name": "coreorm/slim3-view",
+  "description": "view renderer for slim3 with very straightforward and simple (yet still customisable) theme/layout/templates structure",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Bruce B Li",
+      "email": "coreorm@gmail.com"
     }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=5.6",
+    "psr/http-message": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Coreorm\\Slim3\\": "src"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.5",
+    "slim/slim": "^3.0"
+  }
 }

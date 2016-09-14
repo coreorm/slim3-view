@@ -23,7 +23,7 @@ class View
     /**
      * @var string
      */
-    private $templateFile =  '';
+    private $templateFile = '';
 
     /**
      * constructor
@@ -40,12 +40,16 @@ class View
      * import a template - this is for template files so they can use
      * $this->import($templateFile, $data) for sub templates
      * @param $templateFile
-     * @param $data
-     * @return mixed
+     * @param array $data
+     * @param bool $shouldFallback this will automatically fall back to shared template if not found
+     * @param bool $reuseHTML if true, this template will render ever once and be reused afterwards
+     * @return string
      */
-    protected final function import($templateFile, $data = [])
+    final protected function import($templateFile, $data = [], $shouldFallback = true, $reuseHTML = false)
     {
-        return Theme::instance()->renderView($templateFile, $data, true);
+        $src = Theme::instance()->renderView($templateFile, $data, $shouldFallback, $reuseHTML);
+        echo $src;
+        return $src;
     }
 
     /**
@@ -59,5 +63,4 @@ class View
         include $this->templateFile;
         return ob_get_clean();
     }
-
 }

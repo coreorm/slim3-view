@@ -29,13 +29,11 @@ class Theme
      * @var array
      */
     private $cnf = [
-        'basePath'         => '',
-        'layout'           => '',
-        'theme'            => '',
-        'defaultLayout'    => 'default',
-        'defaultTheme'     => 'default',
-        'themePath'        => null,
-        'defaultThemePath' => null
+        'basePath'    => '',
+        'layout'      => '',
+        'theme'       => '',
+        'customPaths' => [],
+        'sharedPaths' => []
     ];
 
     /**
@@ -43,6 +41,12 @@ class Theme
      * @var array
      */
     protected $data = [];
+
+    /**
+     * reusable HTML cache
+     * @var array
+     */
+    protected $reusableHTML = [];
 
     /**
      * single instance of view
@@ -67,6 +71,20 @@ class Theme
     {
         $this->cnf['basePath'] = realpath($templatePath);
         $this->setTheme($theme);
+    }
+
+    /**
+     * get absolute path for given relative path (against theme)
+     * @param $relativePath
+     * @return string
+     */
+    private function getAbsolutePath($relativePath)
+    {
+        $path = $this->cnf['basePath'] . DIRECTORY_SEPARATOR . $relativePath;
+        if (strpos($path, '.phtml') === false) {
+            $path .= '.phtml';
+        }
+        return $path;
     }
 
     /**
@@ -104,8 +122,25 @@ class Theme
     {
         $this->cnf['theme'] = $theme;
         $this->cnf['themePath'] = $this->cnf['basePath'] . DIRECTORY_SEPARATOR . $theme;
-        $this->cnf['defaultThemePath'] = $this->cnf['basePath'] . DIRECTORY_SEPARATOR . $this->cnf['defaultTheme'];
+        // define the shared theme
+        $this->share('layouts/default', 'default/layouts/default');
         return $this;
+    }
+
+    /**
+     * mark a template from a theme as shareable - so when app is trying to render a file with the same name
+     * but from a different theme, it will fall back to this one when the file does not exist in the different theme.
+     * @param $templateRelativePath
+     * @param $themeAndTemplateFilePath
+     */
+    public function share($templateRelativePath, $themeAndTemplateFilePath)
+    {
+        // theme must exist
+        $path = $this->getAbsolutePath($themeAndTemplateFilePath);
+        if (!is_file($path)) {
+            throw new \RuntimeException("Unable to share template {$themeAndTemplateFilePath} as it doesn't exist.");
+        }
+        $this->cnf['sharedPaths'][$templateRelativePath] = $path;
     }
 
     /**
@@ -125,20 +160,29 @@ class Theme
      * using a closure to ensure no $this in the scope
      * @param $template
      * @param array $data
+     * @param bool $reuseHTML if true, this template will render ever once and be reused afterwards
      * @return string
      */
-    public function scopedInclude($template, $data = [])
+    public function scopedInclude($template, $data = [], $reuseHTML = false)
     {
-        if (strpos($template, '.phtml') === false) {
-            $template .= '.phtml';
+        // if reuseHTML is true, no need to render
+        if ($reuseHTML && !empty($this->reusableHTML[$template])) {
+            return $this->reusableHTML[$template];
         }
 
         $data = array_merge($this->data, $data);
         if (!is_file($template)) {
             throw new \RuntimeException('Template ' . $template . ' is not found.');
         }
+
         $view = new View($template, $data);
-        return $view->render();
+
+        $src = $view->render();
+        if ($reuseHTML) {
+            $this->reusableHTML[$template] = $src;
+        }
+
+        return $src;
     }
 
     /**
@@ -147,24 +191,23 @@ class Theme
      */
     protected function getLayoutPath()
     {
-        $path = $this->cnf['themePath'] . DIRECTORY_SEPARATOR .
-            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['layout'] . '.phtml';
+        $path = $this->getAbsolutePath("{$this->cnf['theme']}/layouts/{$this->cnf['layout']}");
         if (is_file($path)) {
             return $path;
         }
-        // 1st level fallback: go back to default layout within the same theme
-        $path = $this->cnf['themePath'] . DIRECTORY_SEPARATOR .
-            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['layout'] . '.phtml';
-        if (is_file($path)) {
-            return $path;
-        }
-        // 2nd level fallback: use default layout file from default theme
-        $path = $this->cnf['defaultThemePath'] . DIRECTORY_SEPARATOR .
-            'layouts' . DIRECTORY_SEPARATOR . $this->cnf['defaultLayout'] . '.phtml';
-        // just return now - render will verify it again
-        return $path;
-    }
 
+        // 1st level: go back to shared
+        if (!empty($this->cnf['sharedPaths']["layouts/{$this->cnf['layout']}"])) {
+            return $this->cnf['sharedPaths']["layouts/{$this->cnf['layout']}"];
+        }
+
+        // 2nd level: go back to default shared (by default, /default/layouts/default.phtml is shared)
+        if (!empty($this->cnf['sharedPaths']['layouts/default'])) {
+            return $this->cnf['sharedPaths']['layouts/default'];
+        }
+        // if it gets here, it's broken
+        throw new \RuntimeException('Unable to retrieve the current layout template');
+    }
 
     /**
      * render the layout
@@ -176,6 +219,7 @@ class Theme
         if (!is_string($data)) {
             throw new \InvalidArgumentException('Layout data must be string type');
         }
+
         return $this->scopedInclude($this->getLayoutPath(), [
             'mainContent' => $data
         ]);
@@ -185,28 +229,37 @@ class Theme
      * render a single view
      * @param $template
      * @param $data
-     * @param bool|false $print
+     * @param bool $shouldFallback this will automatically fall back to shared template if not found
+     * @param bool $reuseHTML if true, this template will render ever once and be reused afterwards
      * @return string
      */
-    public function renderView($template, $data = [], $print = false)
+    public function renderView($template, $data = [], $shouldFallback = true, $reuseHTML = false)
     {
-        $template = $this->cnf['themePath'] . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . $template;
-        $resp = $this->scopedInclude($template, $data);
-        if ($print) {
-            echo $resp;
+        $relativePath = 'views' . DIRECTORY_SEPARATOR . $template;
+        $absPath = $this->getAbsolutePath($this->cnf['theme'] . DIRECTORY_SEPARATOR . $relativePath);
+
+        if ($shouldFallback && !is_file($absPath)) {
+            if (!empty($this->cnf['sharedPaths'][$relativePath])) {
+                $absPath = $this->cnf['sharedPaths'][$relativePath];
+            } else {
+                // unable to render - invalid
+                throw new \RuntimeException('unable to find fallback template for ' . $template);
+            }
         }
-        return $resp;
+
+        return $this->scopedInclude($absPath, $data, $reuseHTML);
     }
 
     /**
      * @param ResponseInterface $response
      * @param $template
      * @param array $data
+     * @param bool $shouldFallback this will automatically fall back to shared template if not found
      * @return ResponseInterface
      */
-    public function render(ResponseInterface $response, $template, array $data = [])
+    public function render(ResponseInterface $response, $template, array $data = [], $shouldFallback = false)
     {
-        $cnt = $this->renderView($template, $data);
+        $cnt = $this->renderView($template, $data, $shouldFallback);
         $output = $this->renderLayout($cnt);
         $response->getBody()->write($output);
         return $response;
