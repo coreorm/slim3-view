@@ -45,7 +45,7 @@ class View
      * @param bool $reuseHTML if true, this template will render ever once and be reused afterwards
      * @return string
      */
-    final protected function import($templateFile, $data = [], $shouldFallback = true, $reuseHTML = false)
+    final public function import($templateFile, $data = [], $shouldFallback = true, $reuseHTML = false)
     {
         $src = Theme::instance()->renderView($templateFile, $data, $shouldFallback, $reuseHTML);
         echo $src;
