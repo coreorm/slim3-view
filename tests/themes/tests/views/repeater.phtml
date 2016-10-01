@@ -1,0 +1,7 @@
+<?php
+if ($this instanceof \Coreorm\Slim3\View) {
+    for ($index = 0; $index <= 10; $index++) {
+        echo PHP_EOL;
+        $this->import('sub/pc', ['index' => $index]);
+    }
+}

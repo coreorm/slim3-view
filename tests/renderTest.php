@@ -44,4 +44,13 @@ class RenderTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($cachedTime < $uncachedTime);
         echo "\nRender {$cnt} times: \ncached: {$cachedTime}ms VS. uncached: {$uncachedTime} ms";
     }
+
+    public function testLoopView()
+    {
+        $theme = Theme::instance(__DIR__ . '/../examples/themes', 'tests');
+        $response = new Response();
+        $theme->render($response, 'repeater');
+        $src = $response->getBody()->__toString();
+        $this->assertContains('Index:10', $src);
+    }
 }
